@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+shapely
+fastapi_health
+Pillow
