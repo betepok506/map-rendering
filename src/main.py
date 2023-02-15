@@ -22,6 +22,10 @@ tileset = None
 
 @app.on_event('startup')
 def load_mbtiles():
+    """
+    Функция для реализации подключение к PostgreSql
+
+    """
     pass
     # global tileset
     # FILE_NAME_MBTILES = os.path.join("./data", os.getenv("FILE_NAME_MBTILES"))
@@ -31,6 +35,21 @@ def load_mbtiles():
 
 
 def create_tiles(bboxes, tile_size: int = 256):
+    """
+    Функция для создания прозразного tile  и рисования на нем переданных полигонов
+
+    Parameters
+    ------------
+    bboxes: `list`
+        Массив пиксельных координат полигонов
+    tile_size: `int`
+        Размер создаваемого tile
+
+    Returns
+    ------------
+    'np.array'
+        Полученное изображение
+    """
     img = Image.new('RGBA', (tile_size, tile_size), 'black')
     draw = ImageDraw.Draw(img)
     for bbox in bboxes:
@@ -62,6 +81,24 @@ def create_tiles(bboxes, tile_size: int = 256):
          }
          )
 async def root(z: int, x: int, y: int):
+    """
+    Функция по запрошенным координатам x, y и зуму z возвращает сгененированный tiles.
+    Информация о объектах в tiles запрашивается из базы
+
+    Parameters
+    ------------
+    z: `int`
+        Zoom запрашиваемого tile
+    x: `int`
+        x координата запрашиваемого tile
+    y: `int`
+        y координата запрашиваемого tile
+
+    Returns
+    ------------
+    `Response`
+        Ответ сервера, содержащий bytearray массив изображения
+    """
     zoom = z
     bboxes = get_boxes(x, y, zoom)
     bboxes = LatLon2Pixels(bboxes, x, y, zoom)
@@ -76,6 +113,25 @@ async def root(z: int, x: int, y: int):
 
 
 def LatLon2Pixels(bboxes, x, y, zoom):
+    """
+    Функция для преобразование координат широты и долготы в в пиксельные координаты в рамках одного изображения
+
+    Parameters
+    ------------
+    bboxes: `list`
+        Массив координат широты и долготы политгонов объектов
+    x: `int`
+        x координата запрашиваемого tile
+    y: `int`
+        y координата запрашиваемого tile
+    zoom: `int`
+        Zoom запрашиваемого tile
+
+    Returns
+    ------------
+    `list`
+        Массив пиксельных координат полигонов в рамках одного tile
+    """
     glm = GlobalMercator()
     bboxes_pixel = []
     meters = glm.TileBounds(x, y, zoom)
@@ -92,6 +148,24 @@ def LatLon2Pixels(bboxes, x, y, zoom):
 
 
 def get_boxes(x, y, zoom):
+    """
+    Функция для получения bbox, лежащих внутри tile
+    Вдальнейшем будет заменена на скрипт внутри PostgreSQL
+
+    Parameters
+    ------------
+    x: `int`
+        x координата запрашиваемого tile
+    y: `int`
+        y координата запрашиваемого tile
+    zoom: `int`
+        Zoom запрашиваемого tile
+
+    Returns
+    ------------
+    `list`
+        Массив координат bboxes, лежащих внутри tile
+    """
     print(f"X {x} {y} {zoom}")
     """Находит BBoxes в tiles"""
     car_bboxes = [
